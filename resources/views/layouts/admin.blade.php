@@ -63,12 +63,6 @@
                             <p>Data Arsip</p>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="{{ route('admin.archives.generate') }}" class="nav-link">
-                            <i class="nav-icon fas fa-file-pdf"></i>
-                            <p>Generate PDF</p>
-                        </a>
-                    </li>
                 </ul>
             </nav>
         </div>

@@ -18,9 +18,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'can:manage-users'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard');
 
-    Route::get('archives/generate', [ArchivesController::class, 'generate'])->name('archives.generate');
-    Route::post('archives/generate', [ArchivesController::class, 'storeGeneratedPDF'])->name('archives.storeGenerated');
-
     Route::resource('users', UserController::class)->except(['show']);
     Route::resource('archives', ArchivesController::class)->except(['show']);
 

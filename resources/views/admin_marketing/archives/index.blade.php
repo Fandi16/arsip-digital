@@ -19,7 +19,7 @@
             <table id="archivesTable" class="table table-hover table-bordered align-middle">
                 <thead class="table-dark">
                     <tr class="text-center">
-                        <th>#</th>
+                        <th>NO</th>
                         <th>CIF</th>
                         <th>Rekening Pinjaman</th>
                         <th>Nama Nasabah</th>

@@ -25,7 +25,7 @@ Route::middleware(['auth', 'can:manage-users'])->prefix('admin')->name('admin.')
     Route::post('scanner/upload', [ScannerController::class, 'upload'])->name('scanner.upload');
     Route::post('scanner/store', [ScannerController::class, 'store'])->name('scanner.store');
     Route::post('scanner/download-pdf', [ScannerController::class, 'downloadPdf'])->name('scanner.download-pdf');
-    
+    Route::post('scanner/enhance', [ScannerController::class, 'enhance'])->name('scanner.enhance');
 });
 
 // =============== ADMIN MARKETING ===============
@@ -35,6 +35,11 @@ Route::middleware(['auth'])->prefix('admin-marketing')->name('admin_marketing.')
     })->name('dashboard');
 
     Route::resource('archives', ArchivesController::class)->except(['show']);
+
+    Route::get('scanner', [ScannerController::class, 'index'])->name('scanner.index');
+    Route::post('scanner/upload', [ScannerController::class, 'upload'])->name('scanner.upload');
+    Route::post('scanner/store', [ScannerController::class, 'store'])->name('scanner.store');
+    Route::post('scanner/download-pdf', [ScannerController::class, 'downloadPdf'])->name('scanner.download-pdf');
 });
 
 // ================ MARKETING ===================
@@ -44,4 +49,9 @@ Route::middleware(['auth'])->prefix('marketing')->name('marketing.')->group(func
     })->name('dashboard');
 
     Route::resource('archives', ArchivesController::class)->except(['show']);
+
+    Route::get('scanner', [ScannerController::class, 'index'])->name('scanner.index');
+    Route::post('scanner/upload', [ScannerController::class, 'upload'])->name('scanner.upload');
+    Route::post('scanner/store', [ScannerController::class, 'store'])->name('scanner.store');
+    Route::post('scanner/download-pdf', [ScannerController::class, 'downloadPdf'])->name('scanner.download-pdf');
 });

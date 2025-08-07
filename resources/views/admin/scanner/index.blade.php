@@ -15,15 +15,38 @@
         </div>
     @endif
 
-    {{-- Tombol Pilih --}}
+    {{-- Tombol Pilih / Kamera --}}
     <div class="m-3 d-flex gap-3">
-        <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click();">
+        <button type="button" class="btn btn-primary m-2" onclick="document.getElementById('fileInput').click();">
             <i class="fas fa-upload"></i> Upload Foto
         </button>
-        <button type="button" class="btn btn-success" onclick="document.getElementById('cameraInput').click();">
+        <button type="button" class="btn btn-success m-2" onclick="openCamera()">
             <i class="fas fa-camera"></i> Ambil dari Kamera
         </button>
     </div>
+
+    {{-- Kamera View --}}
+    <div id="cameraSection" class="mt-4" style="display: none;">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center">
+                <h5 class="mb-3">📷 Kamera Aktif</h5>
+                <div class="d-flex justify-content-center">
+                    <video id="video" class="rounded shadow camera-video" autoplay playsinline ></video>
+                </div>
+
+                <div class="mt-3 d-flex justify-content-center gap-3 flex-wrap">
+                    <button type="button" class="btn btn-warning" onclick="captureImage()">
+                        <i class="fas fa-camera"></i> Ambil Gambar
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeCamera()">
+                        <i class="fas fa-times"></i> Tutup Kamera
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="canvas" style="display:none;"></canvas>
 
     {{-- Form --}}
     <form id="scanForm" action="{{ route('admin.scanner.upload') }}" method="POST" enctype="multipart/form-data">
@@ -43,84 +66,46 @@
         </button>
     </form>
 </div>
-@endsection
 
-@push('scripts')
-<script>
-    const previewContainer = document.getElementById('preview');
-    const hiddenInputsContainer = document.getElementById('hiddenInputs');
-    const scanForm = document.getElementById('scanForm');
+{{-- Modal Filter --}}
+<div id="filterModal" 
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+            background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
+    <div style="background:white; padding:20px; border-radius:10px; text-align:center; max-width:600px; margin:auto;">
+        <h5>🖼 Edit Gambar</h5>
+        <img id="modalImage" src="" style="max-width:100%; max-height:60vh;" class="mb-3">
 
-    let selectedFiles = [];
+        <div class="d-flex gap-2 justify-content-center mb-3 flex-wrap">
+            <button class="btn btn-primary" onclick="applyFilter('scanner')">📄 Mode Scanner</button>
+        </div>
 
-    function addImages(files) {
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const reader = new FileReader();
 
-            reader.onload = function (e) {
-                const wrapper = document.createElement('div');
-                wrapper.classList.add('position-relative');
+        <div class="d-flex gap-2 justify-content-center">
+            <button class="btn btn-success" onclick="saveFilter()">Simpan</button>
+            <button class="btn btn-danger" onclick="closeFilterModal()">Batal</button>
+        </div>
+    </div>
+</div>
 
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style = 'width: 150px; height: auto; border: 1px solid #ccc; padding: 5px;';
-                wrapper.appendChild(img);
+<style>
+    .camera-video {
+        max-width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
 
-                const closeBtn = document.createElement('button');
-                closeBtn.innerHTML = '&times;';
-                closeBtn.type = 'button';
-                closeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0';
-                closeBtn.style = 'margin: 2px; border-radius: 50%; padding: 0 6px;';
-                closeBtn.onclick = function () {
-                    const index = selectedFiles.indexOf(file);
-                    if (index !== -1) {
-                        selectedFiles.splice(index, 1);
-                    }
-                    wrapper.remove();
-                };
-
-                wrapper.appendChild(closeBtn);
-                previewContainer.appendChild(wrapper);
-
-                selectedFiles.push(file);
-            };
-
-            reader.readAsDataURL(file);
+    @media (max-width: 768px) {
+        /* HP: portrait penuh */
+        .camera-video {
+            height: 70vh;
+            object-fit: cover;
         }
     }
 
-    scanForm.addEventListener('submit', function (e) {
-        if (selectedFiles.length === 0) {
-            e.preventDefault();
-            alert("Silakan pilih atau ambil gambar terlebih dahulu.");
-            return;
-        }
+</style>
 
-        hiddenInputsContainer.innerHTML = '';
+@endsection
 
-        selectedFiles.forEach(file => {
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.name = 'images[]';
-            fileInput.files = dataTransfer.files;
-            fileInput.classList.add('d-none');
-
-            hiddenInputsContainer.appendChild(fileInput);
-        });
-    });
-
-    document.getElementById('fileInput').addEventListener('change', function () {
-        addImages(this.files);
-        this.value = '';
-    });
-
-    document.getElementById('cameraInput').addEventListener('change', function () {
-        addImages(this.files);
-        this.value = '';
-    });
-</script>
+@push('scripts')
+<script src="{{ asset('js/scan-filters.js') }}"></script>
 @endpush

@@ -18,15 +18,27 @@ class ArchivesController extends Controller
 
         if ($role === 'admin_marketing') {
             $wilayah = json_decode($user->wilayah ?? '[]', true);
-            $archives = Archives::whereIn('wilayah', $wilayah)->with('user')->get();
+
+            $archives = Archives::whereIn('wilayah', $wilayah)
+                                ->with('user')
+                                ->latest()
+                                ->get();
+
             return view('admin_marketing.archives.index', compact('archives'));
 
         } elseif ($role === 'marketing') {
-            $archives = Archives::where('user_id', $user->id)->with('user')->get();
+            $archives = Archives::where('user_id', $user->id)
+                                ->with('user')
+                                ->latest()
+                                ->get();
+
             return view('marketing.archives.index', compact('archives'));
 
         } else {
-            $archives = Archives::with('user')->get();
+            $archives = Archives::with('user')
+                                ->latest()
+                                ->get();
+
             return view('admin.archives.index', compact('archives'));
         }
     }

@@ -7,41 +7,78 @@ use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Archives;
 use Illuminate\Support\Facades\Auth;
+use Intervention\Image\Facades\Image;
+
 
 class ScannerController extends Controller
 {
     // 1. Halaman awal scanner
     public function index()
     {
-        return view('admin.scanner.index');
-    }
+        $role = Auth::user()->role;
 
-    // 2. Upload gambar → Convert PDF → Tampilkan form metadata
-    public function upload(Request $request)
-    {
-        $request->validate([
-            'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
-        ]);
-
-        $paths = [];
-
-        foreach ($request->file('images') as $image) {
-            $filename = time() . '-' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $path = $image->storeAs('public/temp-images', $filename);
-            $paths[] = storage_path('app/' . $path);
+        if ($role === 'admin') {
+            return view('admin.scanner.index');
+        } elseif ($role === 'admin_marketing') {
+            return view('admin_marketing.scanner.index');
+        } elseif ($role === 'marketing') {
+            return view('marketing.scanner.index');
+        } else {
+            abort(403);
         }
-
-        // Generate PDF dari gambar
-        $pdf = Pdf::loadView('admin.scanner.generated_pdf', ['images' => $paths])->setPaper('a4');
-        $fileName = 'scan-' . time() . '.pdf';
-        Storage::put('public/arsip/' . $fileName, $pdf->output());
-
-        // Redirect ke form metadata arsip dengan nama file PDF
-        return view('admin.scanner.form', [
-            'pdf' => $fileName,
-        ]);
     }
+
+// 2. Upload gambar → Convert PDF → Tampilkan form metadata
+public function upload(Request $request)
+{
+    $request->validate([
+        'images' => 'required|array',
+        'images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
+    ]);
+
+    $paths = [];
+
+    foreach ($request->file('images') as $image) {
+        // Baca gambar
+        $img = \Intervention\Image\Facades\Image::make($image);
+
+        // Tentukan ukuran A4 (portrait) dengan resolusi sedang
+        $width = 1240;   // ~150 DPI
+        $height = 1754;  // A4 portrait ratio
+
+        // Resize gambar agar mengisi penuh A4 tanpa white space
+        $img->fit($width, $height, function ($constraint) {
+            $constraint->upsize(); // mencegah gambar jadi pecah
+        });
+
+        // Simpan sementara untuk PDF
+        $filename = 'scan_' . uniqid() . '.jpg';
+        $path = storage_path('app/public/temp-images/' . $filename);
+        $img->save($path, 90); // simpan kualitas 90%
+
+        $paths[] = $path;
+    }
+
+    // Generate PDF dari gambar
+    $pdf = Pdf::loadView('components.generated_pdf', ['images' => $paths]);
+    // Jangan pakai setPaper, biar otomatis
+    $fileName = 'scan-' . time() . '.pdf';
+    Storage::put('public/arsip/' . $fileName, $pdf->output());
+
+
+    // Redirect sesuai role
+    $role = \Auth::user()->role;
+    if ($role === 'admin') {
+        return view('admin.scanner.form', ['pdf' => $fileName]);
+    } elseif ($role === 'admin_marketing') {
+        return view('admin_marketing.scanner.form', ['pdf' => $fileName]);
+    } elseif ($role === 'marketing') {
+        return view('marketing.scanner.form', ['pdf' => $fileName]);
+    } else {
+        abort(403);
+    }
+}
+
 
     // 3. Simpan metadata arsip + nama file PDF ke DB
     public function store(Request $request)
@@ -51,7 +88,7 @@ class ScannerController extends Controller
             'cif'                => 'required|string|max:100',
             'rekening_pinjaman' => 'required|string|max:100',
             'wilayah'           => 'required|string|max:100',
-            'pdf'                => 'required|string',
+            'pdf'               => 'required|string',
             'user_id'           => 'required|exists:users,id',
         ]);
 
@@ -68,9 +105,20 @@ class ScannerController extends Controller
             'user_id'           => $request->user_id,
         ]);
 
-      return redirect()->route('admin.archives.index')->with('success', 'Hasil scan berhasil disimpan.');
+        // Redirect berdasarkan role
+        $role = Auth::user()->role;
 
+        if ($role === 'admin') {
+            return redirect()->route('admin.archives.index')->with('success', 'Hasil scan berhasil disimpan.');
+        } elseif ($role === 'admin_marketing') {
+            return redirect()->route('admin_marketing.archives.index')->with('success', 'Hasil scan berhasil disimpan.');
+        } elseif ($role === 'marketing') {
+            return redirect()->route('marketing.archives.index')->with('success', 'Hasil scan berhasil disimpan.');
+        } else {
+            abort(403);
+        }
     }
+
     // 4. (Opsional) Generate dan Download PDF tanpa menyimpannya
     public function downloadPdf(Request $request)
     {
@@ -87,11 +135,33 @@ class ScannerController extends Controller
             $paths[] = storage_path('app/' . $path);
         }
 
-        $pdf = Pdf::loadView('admin.scanner.generated_pdf', ['images' => $paths])->setPaper('a4');
+        $pdf = Pdf::loadView('components.generated_pdf', ['images' => $paths])->setPaper('a4');
 
         return response($pdf->output(), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="scan_' . time() . '.pdf"',
         ]);
     }
+    public function enhance(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|max:5120',
+        ]);
+
+        $file = $request->file('image');
+        $image = Image::make($file)
+            ->greyscale()
+            ->contrast(25)
+            ->brightness(10)
+            ->sharpen(10);
+
+        $fileName = 'enhanced_' . time() . '.jpg';
+        $path = 'public/enhanced/' . $fileName;
+        Storage::put($path, (string) $image->encode('jpg', 90));
+
+        return response()->json([
+            'filtered_image_url' => Storage::url($path),
+        ]);
+    }
+
 }

@@ -16,7 +16,7 @@
     @endif
 
 
-    <form method="POST" action="{{ route('admin.scanner.store') }}">
+    <form method="POST" action="{{ route('admin_marketing.scanner.store') }}">
          @if ($pdf)
             <div class="mt-5">
                 <h5>Preview PDF Hasil Scan</h5>

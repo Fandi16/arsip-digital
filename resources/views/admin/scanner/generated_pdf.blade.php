@@ -7,21 +7,22 @@
             margin: 0;
             padding: 0;
         }
-        .page {
+        .page-break {
             page-break-after: always;
-            text-align: center;
         }
         img {
-            max-width: 100%;
-            height: auto;
+            display: block;
+            width: 100%;  /* Full lebar halaman */
+            height: auto; /* Proporsional */
         }
     </style>
 </head>
 <body>
-    @foreach($images as $image)
-        <div class="page">
-            <img src="{{ $image }}">
-        </div>
+    @foreach ($images as $index => $img)
+        <img src="{{ $img }}">
+        @if (!$loop->last)
+            <div class="page-break"></div>
+        @endif
     @endforeach
 </body>
 </html>

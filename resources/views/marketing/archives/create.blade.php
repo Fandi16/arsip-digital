@@ -37,7 +37,7 @@
 
                     <div class="col-md-6">
                         <label>Kategori</label>
-                        <select name="kategori" class="form-select" required>
+                        <select name="kategori" class="form-select" >
                             <option value="">-- Pilih Kategori --</option>
                             <option value="berkas">Berkas</option>
                             <option value="spk">SPK</option>
@@ -48,7 +48,7 @@
 
                     <div class="col-md-6">
                         <label>File (PDF / DOC / DOCX / XLSX)</label>
-                        <input type="file" name="file" class="form-control" required>
+                        <input type="file" name="file" class="form-control" >
                     </div>
 
                 </div>

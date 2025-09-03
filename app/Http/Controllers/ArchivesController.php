@@ -20,24 +20,24 @@ class ArchivesController extends Controller
             $wilayah = json_decode($user->wilayah ?? '[]', true);
 
             $archives = Archives::whereIn('wilayah', $wilayah)
-                                ->with('user')
-                                ->latest()
-                                ->get();
+                ->with('user')
+                ->latest()
+                ->get();
 
             return view('admin_marketing.archives.index', compact('archives'));
 
         } elseif ($role === 'marketing') {
             $archives = Archives::where('user_id', $user->id)
-                                ->with('user')
-                                ->latest()
-                                ->get();
+                ->with('user')
+                ->latest()
+                ->get();
 
             return view('marketing.archives.index', compact('archives'));
 
         } else {
             $archives = Archives::with('user')
-                                ->latest()
-                                ->get();
+                ->latest()
+                ->get();
 
             return view('admin.archives.index', compact('archives'));
         }
@@ -77,8 +77,8 @@ class ArchivesController extends Controller
             'nama'              => 'required',
             'wilayah'           => 'required',
             'plafond'           => 'required|numeric',
-            'kategori'          => 'required|in:berkas,spk,proposal,jaminan',
-            'file'              => 'required|mimes:pdf,doc,docx,xlsx|max:512000',
+            'kategori'          => 'nullable|in:berkas,spk,proposal,jaminan',
+            'file'              => 'nullable|mimes:pdf,doc,docx,xlsx|max:512000',
         ];
 
         if ($user->role === 'admin') {
@@ -88,10 +88,13 @@ class ArchivesController extends Controller
         $request->validate($rules);
         $userId = $user->role === 'admin' ? $request->user_id : $user->id;
 
-        $arsipName = Str::slug($request->nama);
-        $ext = $request->file('file')->getClientOriginalExtension();
-        $fileName = $arsipName . '-' . time() . '.' . $ext;
-        $request->file('file')->storeAs('public/arsip', $fileName);
+        $fileName = null;
+        if ($request->hasFile('file')) {
+            $arsipName = Str::slug($request->nama);
+            $ext = $request->file('file')->getClientOriginalExtension();
+            $fileName = $arsipName . '-' . time() . '.' . $ext;
+            $request->file('file')->storeAs('public/arsip', $fileName);
+        }
 
         Archives::create([
             'cif'               => $request->cif,
@@ -137,7 +140,7 @@ class ArchivesController extends Controller
             'nama'              => 'required',
             'wilayah'           => 'required',
             'plafond'           => 'required|numeric',
-            'kategori'          => 'required|in:berkas,spk,proposal,jaminan',
+            'kategori'          => 'nullable|in:berkas,spk,proposal,jaminan',
             'file'              => 'nullable|mimes:pdf,doc,docx,xlsx|max:512000',
         ];
 
@@ -172,7 +175,9 @@ class ArchivesController extends Controller
 
     public function destroy(Archives $archive)
     {
-        Storage::delete('public/arsip/' . $archive->file);
+        if ($archive->file) {
+            Storage::delete('public/arsip/' . $archive->file);
+        }
         $archive->delete();
 
         return $this->redirectAfterAction('Data arsip berhasil dihapus.');

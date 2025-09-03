@@ -49,17 +49,19 @@
 
                 <div class="form-group">
                     <label>Kategori</label>
-                    <select name="kategori" class="form-control" required>
-                        <option value="berkas">Berkas</option>
-                        <option value="spk">SPK</option>
-                        <option value="proposal">Proposal</option>
-                        <option value="jaminan">Jaminan</option>
+                    <select name="kategori" class="form-control">
+                        <option value="">-- Pilih Kategori --</option>
+                        <option value="berkas" {{ old('kategori') == 'berkas' ? 'selected' : '' }}>Berkas</option>
+                        <option value="spk" {{ old('kategori') == 'spk' ? 'selected' : '' }}>SPK</option>
+                        <option value="proposal" {{ old('kategori') == 'proposal' ? 'selected' : '' }}>Proposal</option>
+                        <option value="jaminan" {{ old('kategori') == 'jaminan' ? 'selected' : '' }}>Jaminan</option>
                     </select>
                 </div>
 
+
                 <div class="form-group">
                     <label>Upload File</label>
-                    <input type="file" name="file" class="form-control" required>
+                    <input type="file" name="file" class="form-control" >
                 </div>
 
                 <button type="submit" class="btn btn-primary">Simpan</button>

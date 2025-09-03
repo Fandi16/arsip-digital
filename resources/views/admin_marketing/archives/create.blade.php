@@ -31,7 +31,7 @@
                     </div>
                     <div class="col-md-6">
                         <label>Kategori</label>
-                        <select name="kategori" class="form-select" required>
+                        <select name="kategori" class="form-select" >
                             <option value="">-- Pilih --</option>
                             <option value="berkas">Berkas</option>
                             <option value="spk">SPK</option>
@@ -41,7 +41,7 @@
                     </div>
                     <div class="col-md-6">
                         <label>File Arsip</label>
-                        <input type="file" name="file" class="form-control" required accept=".pdf,.doc,.docx,.xlsx">
+                        <input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx,.xlsx">
                     </div>
                 </div>
 

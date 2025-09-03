@@ -15,8 +15,8 @@ return new class extends Migration {
             $table->string('wilayah');
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); 
             $table->decimal('plafond', 15, 2);
-            $table->enum('kategori', ['berkas', 'spk', 'proposal', 'jaminan']);
-            $table->string('file');
+            $table->enum('kategori', ['berkas', 'spk', 'proposal', 'jaminan'])->nullable();
+            $table->string('file')->nullable();
             $table->timestamps();
         });
     }
